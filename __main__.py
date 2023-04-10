@@ -12,10 +12,10 @@ from netunicorn.base.environment_definitions import DockerImage, ShellExecution
 from netunicorn.base.nodes import CountableNodePool, Node, Nodes, UncountableNodePool
 from returns.result import Failure, Result, Success
 
-from netunicorn.director.infrastructure.connectors.protocol import (
+from netunicorn.director.base.connectors.protocol import (
     NetunicornConnectorProtocol,
 )
-from netunicorn.director.infrastructure.connectors.types import StopExecutorRequest
+from netunicorn.director.base.connectors.types import StopExecutorRequest
 
 
 class ConnectorTemplate(NetunicornConnectorProtocol):

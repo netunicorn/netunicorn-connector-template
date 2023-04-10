@@ -1,1 +1,1 @@
-netunicorn-director-infrastructure
+netunicorn-base>=0.2.6
