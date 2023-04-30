@@ -19,12 +19,16 @@ from netunicorn.director.base.connectors.types import StopExecutorRequest
 
 
 class ConnectorTemplate(NetunicornConnectorProtocol):
+    """
+    During the development, you can read the documentation for each method
+    from the Protocol class itself.
+    """
     def __init__(
-            self,
-            connector_name: str,
-            configuration: str | None,
-            netunicorn_gateway: str,
-            logger: Optional[Logger] = None
+        self,
+        connector_name: str,
+        configuration: str | None,
+        netunicorn_gateway: str,
+        logger: Optional[Logger] = None,
     ):
         # system-unique name for this instance of the connector
         # just store it
@@ -60,11 +64,11 @@ class ConnectorTemplate(NetunicornConnectorProtocol):
         pass
 
     async def get_nodes(
-            self,
-            username: str,
-            authentication_context: Optional[dict[str, str]] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        username: str,
+        authentication_context: Optional[dict[str, str]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> Nodes:
         # you should implement mapping between infrastructure nodes and netunicorn Node abstraction
         # and return Nodes object
@@ -78,7 +82,7 @@ class ConnectorTemplate(NetunicornConnectorProtocol):
             [
                 Node(
                     name=f"node-{i}",
-                    properties={'cpu': 4, 'memory': 16, 'gpu': 0},
+                    properties={"cpu": 4, "memory": 16, "gpu": 0},
                     architecture=Architecture.LINUX_AMD64,
                 )
                 for i in range(3)
@@ -91,26 +95,26 @@ class ConnectorTemplate(NetunicornConnectorProtocol):
             node_template=[
                 Node(
                     name=f"node-cpu-",
-                    properties={'cpu': 4, 'memory': 16, 'gpu': 0},
+                    properties={"cpu": 4, "memory": 16, "gpu": 0},
                     architecture=Architecture.LINUX_AMD64,
                 ),
                 Node(
                     name=f"node-gpu-",
-                    properties={'cpu': 4, 'memory': 16, 'gpu': 1},
+                    properties={"cpu": 4, "memory": 16, "gpu": 1},
                     architecture=Architecture.LINUX_AMD64,
                 ),
             ]
         )
 
     async def deploy(
-            self,
-            username: str,
-            experiment_id: str,
-            deployments: list[Deployment],
-            deployment_context: Optional[dict[str, str]],
-            authentication_context: Optional[dict[str, str]] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        username: str,
+        experiment_id: str,
+        deployments: list[Deployment],
+        deployment_context: Optional[dict[str, str]],
+        authentication_context: Optional[dict[str, str]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> dict[str, Result[Optional[str], str]]:
         # you should implement deployment of the given list of deployments on the infrastructure
         # deployment means preparation of the environment (such as docker image pull or executor and dependencies installation)
@@ -137,14 +141,14 @@ class ConnectorTemplate(NetunicornConnectorProtocol):
         pass
 
     async def execute(
-            self,
-            username: str,
-            experiment_id: str,
-            deployments: list[Deployment],
-            execution_context: Optional[dict[str, str]],
-            authentication_context: Optional[dict[str, str]] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        username: str,
+        experiment_id: str,
+        deployments: list[Deployment],
+        execution_context: Optional[dict[str, str]],
+        authentication_context: Optional[dict[str, str]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> dict[str, Result[Optional[str], str]]:
         # for a given list of deployments, you should start executors on the infrastructure
         # You should use deployment.environment_definition.runtime_context for additional port mappings
@@ -165,41 +169,58 @@ class ConnectorTemplate(NetunicornConnectorProtocol):
             if not isinstance(deployment.environment_definition, DockerImage):
                 result[deployment.executor_id] = Failure("not a docker image")
 
-            assert deployment.node.name == 'local'
+            assert deployment.node.name == "local"
             print(
                 f"docker run -d -p {deployment.environment_definition.runtime_context.ports_mapping} "
                 f"-e NETUNICORN_GATEWAY_ENDPOINT={self.netunicorn_gateway} "
                 f"-e NETUNICORN_EXECUTOR_ID={deployment.executor_id} "
                 f"-e NETUNICORN_EXPERIMENT_ID={experiment_id} "
                 " -e ".join(
-                    f'{x}={y}' for x, y
-                    in deployment.environment_definition.runtime_context.environment_variables.items()
+                    f"{x}={y}"
+                    for x, y in deployment.environment_definition.runtime_context.environment_variables.items()
                 ),
                 f" --name {deployment.executor_id}"
-                f" {deployment.environment_definition.image}"
+                f" {deployment.environment_definition.image}",
             )
             result[deployment.executor_id] = Success(None)
         return result
 
     async def stop_executors(
-            self,
-            username: str,
-            requests_list: list[StopExecutorRequest],
-            cancellation_context: Optional[dict[str, str]],
-            authentication_context: Optional[dict[str, str]] = None,
-            *args: Any,
-            **kwargs: Any,
+        self,
+        username: str,
+        requests_list: list[StopExecutorRequest],
+        cancellation_context: Optional[dict[str, str]],
+        authentication_context: Optional[dict[str, str]] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> dict[str, Result[Optional[str], str]]:
         # cancel executors on the infrastructure
         # user can provide additional context via cancellation_context and authentication_context
         # e.g.:
-        print(cancellation_context.get('reason'))
+        print(cancellation_context.get("reason"))
 
         # example for docker infrastructure
         result = {}
         for request in requests_list:
-            assert request['node_name'] == 'local'
+            assert request["node_name"] == "local"
             print(f"docker stop {request['executor_id']}")
-            result[request['executor_id']] = Success(None)
+            result[request["executor_id"]] = Success(None)
 
         return result
+
+    async def cleanup(
+        self,
+        experiment_id: str,
+        deployments: list[Deployment],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        # cleanup infrastructure after experiment is finished
+        # example for docker infrastructure
+        for deployment in deployments:
+            # remove container
+            print(f"docker rm {deployment.executor_id}")
+
+            # remove image
+            print(f"docker rmi {deployment.environment_definition.image}")
+        pass
