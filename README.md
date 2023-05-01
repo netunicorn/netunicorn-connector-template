@@ -31,3 +31,12 @@ Brief rules about our namespace packages:
 - You should not create `__init__.py` files in `netunicorn` and `netunicorn/contrib` folders, but you can create them
   in subfolders of `netunicorn/contrib` folder.
 - After installation of your package, your modules will be available as `netunicorn.contrib.connectors.<your_module_name>`.
+
+## GitHub Actions
+This template repository contains a GitHub Actions workflow that will release your connector to PyPI
+when it detects that local version in pyproject.toml is higher than the version on PyPI.  
+
+Please, notice that you either need to add your PyPI credentials to the corresponding environment,
+or use PyPI Trusted Publishing mechanism (see [https://docs.pypi.org/trusted-publishers/](https://docs.pypi.org/trusted-publishers/)).
+
+Note, that by default push trigger is commented out. You need to uncomment it to enable automatic releases.
