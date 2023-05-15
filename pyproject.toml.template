@@ -13,7 +13,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "netunicorn-base >= 0.3.0",
+    "netunicorn-base >= 0.3.3",
+]
+
+[project.optional-dependencies]
+rest = [
+  'fastapi',
+  'uvicorn',
 ]
 
 [tool.setuptools.packages.find]

@@ -27,10 +27,29 @@ of the project. Please, read about namespace packages in Python documentation:
 
 Brief rules about our namespace packages:
 - It's better to place your modules in `netunicorn/contrib` folder. In the particular case of connectors - in 
-  `netunicorn/contrib/connectors` folder.
-- You should not create `__init__.py` files in `netunicorn` and `netunicorn/contrib` folders, but you can create them
-  in subfolders of `netunicorn/contrib` folder.
-- After installation of your package, your modules will be available as `netunicorn.contrib.connectors.<your_module_name>`.
+  `netunicorn/contrib/connectors/<connector_name>` folder.
+- You should not create additional `__init__.py` files in `netunicorn` and `netunicorn/contrib` folders.
+- After installation of your package, your connector will be available as `netunicorn.contrib.connectors.<your_module_name>`.
+
+### REST API
+The template also includes a generic API key protected REST API server implementation for the connector.
+This implementation should work with basic netunicorn REST API connector to allow to host your connector 
+as a standalone service.  
+
+You can modify or even delete this implementation if you don't need it.
+
+To run the server, you need to install the package with the `rest` extra:
+```shell
+pip install connector_name[rest]
+```
+
+This generic implementation uses pre-shared API key to authenticate the requests. You can set the API key
+in the `NETUNICORN_API_KEY` environment variable.
+
+Then, run the server with the following command:
+```shell
+python -m netunicorn.contrib.connectors.connector_name
+```
 
 ## GitHub Actions
 This template repository contains a GitHub Actions workflow that will release your connector to PyPI
